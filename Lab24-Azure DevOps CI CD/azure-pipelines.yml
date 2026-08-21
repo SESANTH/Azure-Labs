@@ -1,0 +1,12 @@
+trigger:
+- main
+
+pool:
+  name: Azure-Cloud-Engineer-Pool
+
+steps:
+- script: |
+    echo "Azure DevOps Pipeline Started"
+    echo "Running on Self-hosted agent"
+    echo "Build completed successfully"
+  displayName: 'Test Pipeline'
