@@ -1,0 +1,273 @@
+using Microsoft.Data.SqlClient;
+
+var builder = WebApplication.CreateBuilder(args);
+
+var app = builder.Build();
+
+var connectionString =
+    "Server=tcp:sql-day29-prod-chandru.database.windows.net,1433;" +
+    "Initial Catalog=EmployeeDB;" +
+    "Authentication=Active Directory Default;" +
+    "Encrypt=True;" +
+    "TrustServerCertificate=False;" +
+    "Connection Timeout=30;";
+
+// -------------------------
+// Root
+// -------------------------
+
+app.MapGet("/", () =>
+{
+    return Results.Ok(new
+    {
+        application = "Employee Management API",
+        environment = "Azure",
+        status = "Running",
+        version = "Day 30 Capstone"
+    });
+});
+
+// -------------------------
+// Health
+// -------------------------
+
+app.MapGet("/health", () =>
+{
+    return Results.Ok(new
+    {
+        status = "Healthy"
+    });
+});
+
+// -------------------------
+// GET ALL EMPLOYEES
+// -------------------------
+
+app.MapGet("/employees", async () =>
+{
+    var employees = new List<Employee>();
+
+    await using var connection = new SqlConnection(connectionString);
+
+    await connection.OpenAsync();
+
+    const string sql = """
+        SELECT EmployeeId, Name, Department, Email
+        FROM Employees
+        ORDER BY EmployeeId
+        """;
+
+    await using var command = new SqlCommand(sql, connection);
+
+    await using var reader = await command.ExecuteReaderAsync();
+
+    while (await reader.ReadAsync())
+    {
+        employees.Add(new Employee(
+            reader.GetInt32(0),
+            reader.GetString(1),
+            reader.IsDBNull(2) ? null : reader.GetString(2),
+            reader.IsDBNull(3) ? null : reader.GetString(3)
+        ));
+    }
+
+    return Results.Ok(employees);
+});
+
+// -------------------------
+// GET EMPLOYEE BY ID
+// -------------------------
+
+app.MapGet("/employees/{id:int}", async (int id) =>
+{
+    await using var connection = new SqlConnection(connectionString);
+
+    await connection.OpenAsync();
+
+    const string sql = """
+        SELECT EmployeeId, Name, Department, Email
+        FROM Employees
+        WHERE EmployeeId = @EmployeeId
+        """;
+
+    await using var command = new SqlCommand(sql, connection);
+
+    command.Parameters.AddWithValue("@EmployeeId", id);
+
+    await using var reader = await command.ExecuteReaderAsync();
+
+    if (!await reader.ReadAsync())
+    {
+        return Results.NotFound(new
+        {
+            message = $"Employee with ID {id} was not found."
+        });
+    }
+
+    var employee = new Employee(
+        reader.GetInt32(0),
+        reader.GetString(1),
+        reader.IsDBNull(2) ? null : reader.GetString(2),
+        reader.IsDBNull(3) ? null : reader.GetString(3)
+    );
+
+    return Results.Ok(employee);
+});
+
+// -------------------------
+// CREATE EMPLOYEE
+// -------------------------
+
+app.MapPost("/employees", async (EmployeeRequest request) =>
+{
+    await using var connection = new SqlConnection(connectionString);
+
+    await connection.OpenAsync();
+
+    const string sql = """
+        INSERT INTO Employees
+        (EmployeeId, Name, Department, Email)
+        VALUES
+        (@EmployeeId, @Name, @Department, @Email)
+        """;
+
+    await using var command = new SqlCommand(sql, connection);
+
+    command.Parameters.AddWithValue("@EmployeeId", request.EmployeeId);
+    command.Parameters.AddWithValue("@Name", request.Name);
+    command.Parameters.AddWithValue(
+        "@Department",
+        (object?)request.Department ?? DBNull.Value
+    );
+    command.Parameters.AddWithValue(
+        "@Email",
+        (object?)request.Email ?? DBNull.Value
+    );
+
+    try
+    {
+        await command.ExecuteNonQueryAsync();
+    }
+    catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
+    {
+        return Results.Conflict(new
+        {
+            message = $"Employee with ID {request.EmployeeId} already exists."
+        });
+    }
+
+    return Results.Created(
+        $"/employees/{request.EmployeeId}",
+        request
+    );
+});
+
+// -------------------------
+// UPDATE EMPLOYEE
+// -------------------------
+
+app.MapPut("/employees/{id:int}", async (
+    int id,
+    EmployeeRequest request) =>
+{
+    await using var connection = new SqlConnection(connectionString);
+
+    await connection.OpenAsync();
+
+    const string sql = """
+        UPDATE Employees
+        SET
+            Name = @Name,
+            Department = @Department,
+            Email = @Email
+        WHERE EmployeeId = @EmployeeId
+        """;
+
+    await using var command = new SqlCommand(sql, connection);
+
+    command.Parameters.AddWithValue("@EmployeeId", id);
+    command.Parameters.AddWithValue("@Name", request.Name);
+    command.Parameters.AddWithValue(
+        "@Department",
+        (object?)request.Department ?? DBNull.Value
+    );
+    command.Parameters.AddWithValue(
+        "@Email",
+        (object?)request.Email ?? DBNull.Value
+    );
+
+    var rowsAffected = await command.ExecuteNonQueryAsync();
+
+    if (rowsAffected == 0)
+    {
+        return Results.NotFound(new
+        {
+            message = $"Employee with ID {id} was not found."
+        });
+    }
+
+    return Results.Ok(new
+    {
+        message = "Employee updated successfully.",
+        employeeId = id
+    });
+});
+
+// -------------------------
+// DELETE EMPLOYEE
+// -------------------------
+
+app.MapDelete("/employees/{id:int}", async (int id) =>
+{
+    await using var connection = new SqlConnection(connectionString);
+
+    await connection.OpenAsync();
+
+    const string sql = """
+        DELETE FROM Employees
+        WHERE EmployeeId = @EmployeeId
+        """;
+
+    await using var command = new SqlCommand(sql, connection);
+
+    command.Parameters.AddWithValue("@EmployeeId", id);
+
+    var rowsAffected = await command.ExecuteNonQueryAsync();
+
+    if (rowsAffected == 0)
+    {
+        return Results.NotFound(new
+        {
+            message = $"Employee with ID {id} was not found."
+        });
+    }
+
+    return Results.Ok(new
+    {
+        message = "Employee deleted successfully.",
+        employeeId = id
+    });
+});
+
+app.Run();
+
+
+
+
+// -------------------------
+// Models
+// -------------------------
+
+record Employee(
+    int EmployeeId,
+    string Name,
+    string? Department,
+    string? Email
+);
+
+record EmployeeRequest(
+    int EmployeeId,
+    string Name,
+    string? Department,
+    string? Email
+);
