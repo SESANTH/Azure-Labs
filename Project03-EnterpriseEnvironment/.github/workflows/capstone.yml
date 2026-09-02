@@ -1,0 +1,43 @@
+name: Day 30 Capstone
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build .NET API
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore Project03-EnterpriseEnvironment/app/EmployeeApi/EmployeeApi.csproj
+
+      - name: Build application
+        run: dotnet build Project03-EnterpriseEnvironment/app/EmployeeApi/EmployeeApi.csproj --configuration Release --no-restore
+
+  bicep:
+    name: Validate Bicep
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Bicep
+        run: az bicep install
+
+      - name: Build Bicep
+        run: az bicep build --file Project03-EnterpriseEnvironment/infra/main.bicep
