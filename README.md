@@ -1,3 +1,4 @@
+
 ## Azure 30-Day Cloud Engineering Challenge
 
 A hands-on Azure Cloud Engineering portfolio covering 30 days of
@@ -39,36 +40,36 @@ Enterprise Capstone
 
 Day      Topic                                    Status
 
-Day 01   Azure Resource Groups                    ✅ Complete
-Day 02   Microsoft Entra ID                       ✅ Complete
-Day 03   Azure RBAC                               ✅ Complete
-Day 04   Azure Storage                            ✅ Complete
-Day 05   Storage Lifecycle Management             ✅ Complete
-Day 06   Virtual Network (VNet)                   ✅ Complete
-Day 07   Network Security Group (NSG)             ✅ Complete
-Day 08   Virtual Machines                         ✅ Complete
-Day 09   Managed Disks & Snapshots                ✅ Complete
-Day 10   Availability Sets & Availability Zones   ✅ Complete
-Day 11   Azure Load Balancer                      ✅ Complete
-Day 12   Azure App Service                        ✅ Complete
-Day 13   Azure Monitor                            ✅ Complete
-Day 14   Azure Backup & Recovery                  ✅ Complete
-Day 15   Virtual Machine Scale Sets (VMSS)        ✅ Complete
-Day 16   Azure Key Vault                          ✅ Complete
-Day 17   Azure Managed Identity                   ✅ Complete
-Day 18   Azure Policy                             ✅ Complete
-Day 19   Azure Log Analytics                      ✅ Complete
-Day 20   Azure Cost Management                    ✅ Complete
-Day 21   Azure CLI                                ✅ Complete
-Day 22   PowerShell                               ✅ Complete
-Day 23   Bicep Infrastructure as Code             ✅ Complete
-Day 24   Azure DevOps CI/CD                       ✅ Complete
-Day 25   GitHub Actions                           ✅ Complete
-Day 26   Azure SQL Database                       ✅ Complete
-Day 27   Private Connectivity                     ✅ Complete
-Day 28   Advanced Azure Networking                ✅ Complete
-Day 29   Production .NET Project                  ✅ Complete
-Day 30   Enterprise Environment Capstone          ✅ Complete
+Day 01   Azure Resource Groups                    - [✔]
+Day 02   Microsoft Entra ID                       - [✔]
+Day 03   Azure RBAC                               - [✔]
+Day 04   Azure Storage                            - [✔]
+Day 05   Storage Lifecycle Management             - [✔]
+Day 06   Virtual Network (VNet)                   - [✔]
+Day 07   Network Security Group (NSG)             - [✔]
+Day 08   Virtual Machines                         - [✔]
+Day 09   Managed Disks & Snapshots                - [✔]
+Day 10   Availability Sets & Availability Zones   - [✔]
+Day 11   Azure Load Balancer                      - [✔]
+Day 12   Azure App Service                        - [✔]
+Day 13   Azure Monitor                            - [✔]
+Day 14   Azure Backup & Recovery                  - [✔]
+Day 15   Virtual Machine Scale Sets (VMSS)        - [✔]
+Day 16   Azure Key Vault                          - [✔]
+Day 17   Azure Managed Identity                   - [✔]
+Day 18   Azure Policy                             - [✔]
+Day 19   Azure Log Analytics                      - [✔]
+Day 20   Azure Cost Management                    - [✔]
+Day 21   Azure CLI                                - [✔]
+Day 22   PowerShell                               - [✔]
+Day 23   Bicep Infrastructure as Code             - [✔]
+Day 24   Azure DevOps CI/CD                       - [✔]
+Day 25   GitHub Actions                           - [✔]
+Day 26   Azure SQL Database                       - [✔]
+Day 27   Private Connectivity                     - [✔]
+Day 28   Advanced Azure Networking                - [✔]
+Day 29   Production .NET Project                  - [✔]
+Day 30   Enterprise Environment Capstone          - [✔]
 
 ## 🏗️ Major Projects
 
