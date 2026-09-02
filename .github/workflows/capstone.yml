@@ -27,10 +27,10 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restore dependencies
-        run: dotnet restore app/EmployeeApi/EmployeeApi.csproj
+        run: dotnet restore Project03-EnterpriseEnvironment/app/EmployeeApi/EmployeeApi.csproj
 
       - name: Build application
-        run: dotnet build app/EmployeeApi/EmployeeApi.csproj --configuration Release --no-restore
+        run: dotnet build Project03-EnterpriseEnvironment/app/EmployeeApi/EmployeeApi.csproj --configuration Release --no-restore
 
   bicep:
     name: Validate Bicep
@@ -44,4 +44,4 @@ jobs:
         run: az bicep install
 
       - name: Build Bicep
-        run: az bicep build --file infra/Infra/main.bicep
+        run: az bicep build --file Project03-EnterpriseEnvironment/infra/Infra/main.bicep
