@@ -1,4 +1,7 @@
 using Microsoft.Data.SqlClient;
+using Azure.Identity;
+using Azure.Storage.Blobs;
+using Microsoft.AspNetCore.Antiforgery;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -135,10 +138,12 @@ app.MapPost("/employees", async (EmployeeRequest request) =>
 
     command.Parameters.AddWithValue("@EmployeeId", request.EmployeeId);
     command.Parameters.AddWithValue("@Name", request.Name);
+
     command.Parameters.AddWithValue(
         "@Department",
         (object?)request.Department ?? DBNull.Value
     );
+
     command.Parameters.AddWithValue(
         "@Email",
         (object?)request.Email ?? DBNull.Value
@@ -187,10 +192,12 @@ app.MapPut("/employees/{id:int}", async (
 
     command.Parameters.AddWithValue("@EmployeeId", id);
     command.Parameters.AddWithValue("@Name", request.Name);
+
     command.Parameters.AddWithValue(
         "@Department",
         (object?)request.Department ?? DBNull.Value
     );
+
     command.Parameters.AddWithValue(
         "@Email",
         (object?)request.Email ?? DBNull.Value
@@ -249,14 +256,96 @@ app.MapDelete("/employees/{id:int}", async (int id) =>
     });
 });
 
+// =====================================================
+// BLOB STORAGE
+// =====================================================
+
+var blobServiceClient = new BlobServiceClient(
+    new Uri("https://stday30employee31568.blob.core.windows.net"),
+    new DefaultAzureCredential()
+);
+
+var blobContainerClient =
+    blobServiceClient.GetBlobContainerClient("employee-documents");
+
+
+// -------------------------
+// UPLOAD EMPLOYEE DOCUMENT
+// -------------------------
+
+app.MapPost("/employees/{id:int}/documents", async (
+    int id,
+    IFormFile file) =>
+{
+    if (file == null || file.Length == 0)
+    {
+        return Results.BadRequest(new
+        {
+            message = "A file is required."
+        });
+    }
+
+    var blobName =
+        $"employee-{id}/{Guid.NewGuid()}-{file.FileName}";
+
+    var blobClient =
+        blobContainerClient.GetBlobClient(blobName);
+
+    await using var stream = file.OpenReadStream();
+
+    await blobClient.UploadAsync(
+        stream,
+        overwrite: false
+    );
+
+    return Results.Ok(new
+    {
+        employeeId = id,
+        fileName = file.FileName,
+        blobName = blobName,
+        url = blobClient.Uri.ToString()
+    });
+})
+.DisableAntiforgery();
+
+
+// -------------------------
+// LIST EMPLOYEE DOCUMENTS
+// -------------------------
+
+app.MapGet("/employees/{id:int}/documents", async (int id) =>
+{
+    var prefix = $"employee-{id}/";
+
+    var documents = new List<object>();
+
+    await foreach (var blob in blobContainerClient.GetBlobsAsync(
+        Azure.Storage.Blobs.Models.BlobTraits.None,
+        Azure.Storage.Blobs.Models.BlobStates.None,
+        prefix,
+        CancellationToken.None))
+    {
+        documents.Add(new
+        {
+            name = blob.Name,
+            size = blob.Properties.ContentLength,
+            lastModified = blob.Properties.LastModified
+        });
+    }
+
+    return Results.Ok(documents);
+});
+
+// -------------------------
+// APPLICATION START
+// -------------------------
+
 app.Run();
 
 
-
-
-// -------------------------
-// Models
-// -------------------------
+// =====================================================
+// MODELS
+// =====================================================
 
 record Employee(
     int EmployeeId,
